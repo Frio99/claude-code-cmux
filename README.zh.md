@@ -4,6 +4,8 @@
 
 作者：[@0xEcho99](https://x.com/0xEcho99)
 
+> 一键在 cmux 中启动 Claude Code 的 macOS 小工具。在 Finder 里点一下，cmux 自动新建工作区，Claude Code 直接跑起来。
+
 ## 这是什么？
 
 如果你在用 [Claude Code](https://claude.ai/claude-code)（Anthropic 的 AI 编程助手）和 [cmux](https://cmux.com/)（专为 AI Agent 设计的 Mac 终端），这个小工具能帮你每天省下不少时间。
@@ -37,6 +39,13 @@
 1. **下载解压** —— 点击上面的下载链接
 2. **拖入应用程序** —— 把 `Claude Code Cmux.app` 拖到 `/Applications/` 文件夹
 3. **添加到 Finder 工具栏** —— 按住 `Cmd` 键，把 App 拖到 Finder 顶部工具栏上
+
+也可以通过命令行安装：
+
+```bash
+git clone https://github.com/Frio99/claude-code-cmux.git
+cp -R "claude-code-cmux/Claude Code Cmux.app" /Applications/
+```
 
 > 首次使用时，macOS 会弹出辅助功能权限请求。前往 **系统设置 → 隐私与安全性 → 辅助功能**，允许即可。
 

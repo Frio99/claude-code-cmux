@@ -4,6 +4,8 @@
 
 By [@0xEcho99](https://x.com/0xEcho99)
 
+> A one-click macOS tool to launch Claude Code inside cmux. Click in Finder, cmux creates a new workspace, Claude Code starts automatically.
+
 ## What is this?
 
 If you use [Claude Code](https://claude.ai/claude-code) (Anthropic's AI coding assistant) and [cmux](https://cmux.com/) (a Mac terminal designed for AI agents), this app saves you time every single day.
@@ -37,6 +39,13 @@ That's it. One click, and Claude Code is ready to go in your project folder.
 1. **Download & unzip** — click the download link above
 2. **Drag to Applications** — move `Claude Code Cmux.app` into your `/Applications/` folder
 3. **Add to Finder toolbar** — hold `Cmd` key and drag the app onto the Finder toolbar
+
+Or via command line:
+
+```bash
+git clone https://github.com/Frio99/claude-code-cmux.git
+cp -R "claude-code-cmux/Claude Code Cmux.app" /Applications/
+```
 
 > On first launch, macOS will ask for Accessibility permission. Go to **System Settings → Privacy & Security → Accessibility** and allow it.
 
