@@ -29,14 +29,18 @@ fi
 
 CMD="cd '${TARGET_DIR}' && ${CLAUDE_PATH} --dangerously-skip-permissions"
 
+# 检查 cmux 是否已在运行
+CMUX_RUNNING=$(osascript -e 'application "cmux" is running')
+
 # 保存剪贴板
 OLD_CLIPBOARD=$(pbpaste 2>/dev/null)
 echo -n "$CMD" | pbcopy
 
-# 激活 cmux，新建工作区，粘贴命令并回车
-osascript <<EOF
+if [ "$CMUX_RUNNING" = "true" ]; then
+    # 已运行，新建工作区，粘贴命令并回车
+    osascript <<EOF
 tell application "cmux" to activate
-delay 0.5
+delay 0.3
 tell application "System Events"
     tell process "cmux"
         keystroke "n" using command down
@@ -47,6 +51,29 @@ tell application "System Events"
     end tell
 end tell
 EOF
+else
+    # 未运行，启动 cmux 并等待窗口就绪，使用默认工作区
+    open -a cmux
+    for i in $(seq 1 20); do
+        WINDOW_COUNT=$(osascript -e 'tell application "cmux" to count of windows' 2>/dev/null)
+        if [ "$WINDOW_COUNT" -gt 0 ] 2>/dev/null; then
+            break
+        fi
+        sleep 0.5
+    done
+    sleep 1
+    osascript <<EOF
+tell application "cmux" to activate
+delay 0.3
+tell application "System Events"
+    tell process "cmux"
+        keystroke "v" using command down
+        delay 0.3
+        key code 36
+    end tell
+end tell
+EOF
+fi
 
 # 恢复剪贴板
 sleep 1
