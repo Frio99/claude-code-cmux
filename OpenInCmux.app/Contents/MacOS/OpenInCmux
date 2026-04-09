@@ -1,0 +1,53 @@
+#!/bin/bash
+
+TARGET_DIR="$1"
+
+if [ -z "$TARGET_DIR" ]; then
+    TARGET_DIR=$(osascript -e '
+        tell application "Finder"
+            try
+                set currentPath to POSIX path of (target of front window as alias)
+            on error
+                set currentPath to ""
+            end try
+        end tell
+    ')
+fi
+
+if [ -z "$TARGET_DIR" ]; then
+    TARGET_DIR="$HOME"
+fi
+
+# 加载 shell 环境找到 claude 路径
+source "$HOME/.zshrc" 2>/dev/null || true
+export PATH="$HOME/.local/bin:/usr/local/bin:/opt/homebrew/bin:$PATH"
+
+CLAUDE_PATH=$(command -v claude 2>/dev/null)
+if [ -z "$CLAUDE_PATH" ]; then
+    CLAUDE_PATH="claude"
+fi
+
+CMD="cd '${TARGET_DIR}' && ${CLAUDE_PATH} --dangerously-skip-permissions"
+
+# 保存剪贴板
+OLD_CLIPBOARD=$(pbpaste 2>/dev/null)
+echo -n "$CMD" | pbcopy
+
+# 激活 cmux，新建工作区，粘贴命令并回车
+osascript <<EOF
+tell application "cmux" to activate
+delay 0.5
+tell application "System Events"
+    tell process "cmux"
+        keystroke "n" using command down
+        delay 1
+        keystroke "v" using command down
+        delay 0.3
+        key code 36
+    end tell
+end tell
+EOF
+
+# 恢复剪贴板
+sleep 1
+echo -n "$OLD_CLIPBOARD" | pbcopy
