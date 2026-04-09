@@ -1,5 +1,7 @@
 # claude-code-cmux
 
+[中文文档](README.zh.md)
+
 Launch [Claude Code](https://claude.ai/claude-code) instantly in [cmux](https://cmux.com/) from Finder.
 
 One click → cmux opens a new workspace → Claude Code starts in that folder with `--dangerously-skip-permissions`.
@@ -13,7 +15,7 @@ One click → cmux opens a new workspace → Claude Code starts in that folder w
 Or via command line:
 
 ```bash
-git clone https://github.com/frio/claude-code-cmux.git
+git clone https://github.com/Frio99/claude-code-cmux.git
 cp -R claude-code-cmux/OpenInCmux.app /Applications/
 ```
 
