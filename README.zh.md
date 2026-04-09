@@ -2,6 +2,8 @@
 
 [English](README.md)
 
+作者：[@0xEcho99](https://x.com/0xEcho99)
+
 在 [cmux](https://cmux.com/) 中一键启动 [Claude Code](https://claude.ai/claude-code) —— 专为 AI 编程 Agent 打造的终端。
 
 在 Finder 中点一下 → cmux 新建工作区 → Claude Code 自动启动。

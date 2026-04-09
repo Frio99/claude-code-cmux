@@ -2,6 +2,8 @@
 
 [中文文档](README.zh.md)
 
+By [@0xEcho99](https://x.com/0xEcho99)
+
 One-click launcher for [Claude Code](https://claude.ai/claude-code) inside [cmux](https://cmux.com/) — the terminal built for AI coding agents.
 
 Click the app in Finder → cmux opens a new workspace → Claude Code starts automatically.
