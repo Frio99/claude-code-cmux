@@ -58,21 +58,56 @@ EOF
 else
     # 未运行，启动 cmux 并等待窗口就绪，使用默认工作区
     open -a cmux
-    for i in $(seq 1 20); do
+
+    # 1) 等窗口出现（最多 15s）
+    for i in $(seq 1 30); do
         WINDOW_COUNT=$(osascript -e 'tell application "cmux" to count of windows' 2>/dev/null)
         if [ "$WINDOW_COUNT" -gt 0 ] 2>/dev/null; then
             break
         fi
         sleep 0.5
     done
-    sleep 1
+
+    # 2) 主动激活并轮询确认 cmux 已是最前台进程（最多 5s）
+    osascript -e 'tell application "cmux" to activate' >/dev/null 2>&1
+    for i in $(seq 1 25); do
+        FRONT_APP=$(osascript -e 'tell application "System Events" to name of first application process whose frontmost is true' 2>/dev/null)
+        if [ "$FRONT_APP" = "cmux" ]; then
+            break
+        fi
+        osascript -e 'tell application "cmux" to activate' >/dev/null 2>&1
+        sleep 0.2
+    done
+
+    # 3) 自适应等待：轮询 cmux 主窗口标题，连续两次相同且非空才认为 UI 已稳定
+    #    （Electron 启动期间标题会从空 → "Loading..." → 真正的工作区名）
+    PREV_TITLE=""
+    STABLE_HITS=0
+    for i in $(seq 1 40); do
+        CUR_TITLE=$(osascript -e 'tell application "System Events" to tell process "cmux" to try
+            return name of window 1
+        on error
+            return ""
+        end try' 2>/dev/null)
+        if [ -n "$CUR_TITLE" ] && [ "$CUR_TITLE" = "$PREV_TITLE" ]; then
+            STABLE_HITS=$((STABLE_HITS + 1))
+            if [ "$STABLE_HITS" -ge 2 ]; then
+                break
+            fi
+        else
+            STABLE_HITS=0
+        fi
+        PREV_TITLE="$CUR_TITLE"
+        sleep 0.2
+    done
+
     osascript <<EOF
 tell application "cmux" to activate
 delay 0.3
 tell application "System Events"
     tell process "cmux"
         keystroke "v" using command down
-        delay 0.3
+        delay 0.5
         key code 36
     end tell
 end tell
