@@ -59,55 +59,48 @@ else
     # 未运行，启动 cmux 并等待窗口就绪，使用默认工作区
     open -a cmux
 
-    # 1) 等窗口出现（最多 15s）
-    for i in $(seq 1 30); do
-        WINDOW_COUNT=$(osascript -e 'tell application "cmux" to count of windows' 2>/dev/null)
-        if [ "$WINDOW_COUNT" -gt 0 ] 2>/dev/null; then
-            break
-        fi
-        sleep 0.5
-    done
+    # 所有等待 + 激活 + 粘贴回车在单次 osascript 内完成，
+    # 避免每次轮询都 fork 一个新的 osascript 进程（单次 ~100ms）
+    osascript <<'EOF'
+-- 1) 等 cmux 窗口出现（最多 15s，100ms 粒度）
+repeat 150 times
+    try
+        tell application "cmux"
+            if (count of windows) > 0 then exit repeat
+        end tell
+    end try
+    delay 0.1
+end repeat
 
-    # 2) 主动激活并轮询确认 cmux 已是最前台进程（最多 5s）
-    osascript -e 'tell application "cmux" to activate' >/dev/null 2>&1
-    for i in $(seq 1 25); do
-        FRONT_APP=$(osascript -e 'tell application "System Events" to name of first application process whose frontmost is true' 2>/dev/null)
-        if [ "$FRONT_APP" = "cmux" ]; then
-            break
-        fi
-        osascript -e 'tell application "cmux" to activate' >/dev/null 2>&1
-        sleep 0.2
-    done
-
-    # 3) 自适应等待：轮询 cmux 主窗口标题，连续两次相同且非空才认为 UI 已稳定
-    #    （Electron 启动期间标题会从空 → "Loading..." → 真正的工作区名）
-    PREV_TITLE=""
-    STABLE_HITS=0
-    for i in $(seq 1 40); do
-        CUR_TITLE=$(osascript -e 'tell application "System Events" to tell process "cmux" to try
-            return name of window 1
-        on error
-            return ""
-        end try' 2>/dev/null)
-        if [ -n "$CUR_TITLE" ] && [ "$CUR_TITLE" = "$PREV_TITLE" ]; then
-            STABLE_HITS=$((STABLE_HITS + 1))
-            if [ "$STABLE_HITS" -ge 2 ]; then
-                break
-            fi
-        else
-            STABLE_HITS=0
-        fi
-        PREV_TITLE="$CUR_TITLE"
-        sleep 0.2
-    done
-
-    osascript <<EOF
+-- 2) 激活并轮询直到 cmux 成为最前台（最多 3s）
 tell application "cmux" to activate
-delay 0.3
+repeat 30 times
+    try
+        tell application "System Events"
+            if name of first application process whose frontmost is true is "cmux" then exit repeat
+        end tell
+    end try
+    delay 0.1
+end repeat
+
+-- 3) 等待主窗口标题非空（渲染进程已挂载 UI，最多 5s）
+repeat 50 times
+    try
+        tell application "System Events"
+            tell process "cmux"
+                if (name of window 1) is not "" then exit repeat
+            end tell
+        end tell
+    end try
+    delay 0.1
+end repeat
+
+-- 4) 一点点缓冲，然后粘贴并回车
+delay 0.1
 tell application "System Events"
     tell process "cmux"
         keystroke "v" using command down
-        delay 0.5
+        delay 0.3
         key code 36
     end tell
 end tell
