@@ -1,112 +1,67 @@
 #!/bin/bash
 
-# 确保 UTF-8 编码，支持中文路径
 export LANG=en_US.UTF-8
 export LC_ALL=en_US.UTF-8
 
-TARGET_DIR="$1"
+# --- 弹窗报错 ---
+alert() {
+    osascript -e "display alert \"Claude Code Cmux\" message \"$1\" as warning"
+    exit 1
+}
 
+# --- 获取目标目录 ---
+TARGET_DIR="$1"
 if [ -z "$TARGET_DIR" ]; then
     TARGET_DIR=$(osascript -e '
         tell application "Finder"
             try
-                set currentPath to POSIX path of (target of front window as alias)
+                POSIX path of (target of front window as alias)
             on error
-                set currentPath to ""
+                ""
             end try
         end tell
     ')
 fi
+[ -z "$TARGET_DIR" ] && TARGET_DIR="$HOME"
 
-if [ -z "$TARGET_DIR" ]; then
-    TARGET_DIR="$HOME"
+# --- 检查目录是否存在 ---
+[ ! -d "$TARGET_DIR" ] && alert "目录不存在: $TARGET_DIR"
+
+# --- 找 claude 路径 ---
+CLAUDE_PATH="$HOME/.local/bin/claude"
+if [ ! -x "$CLAUDE_PATH" ]; then
+    # fallback: 在常见路径中查找
+    for p in /usr/local/bin/claude /opt/homebrew/bin/claude "$HOME/.npm-global/bin/claude"; do
+        [ -x "$p" ] && CLAUDE_PATH="$p" && break
+    done
 fi
+[ ! -x "$CLAUDE_PATH" ] && alert "找不到 Claude Code CLI\n\n请先安装: npm install -g @anthropic-ai/claude-code"
 
-# 加载 shell 环境找到 claude 路径
-source "$HOME/.zshrc" 2>/dev/null || true
-export PATH="$HOME/.local/bin:/usr/local/bin:/opt/homebrew/bin:$PATH"
+# --- 检查 cmux 是否已安装 ---
+[ ! -d "/Applications/cmux.app" ] && alert "找不到 cmux\n\n请先安装: https://cmux.com"
 
-CLAUDE_PATH=$(command -v claude 2>/dev/null)
-if [ -z "$CLAUDE_PATH" ]; then
-    CLAUDE_PATH="claude"
-fi
+# --- 找 cmux CLI ---
+CMUX_CLI="/Applications/cmux.app/Contents/Resources/bin/cmux"
+[ ! -x "$CMUX_CLI" ] && alert "找不到 cmux CLI\n\n请先安装: https://cmux.com"
 
-CMD="cd '${TARGET_DIR}' && ${CLAUDE_PATH} --dangerously-skip-permissions"
-
-# 检查 cmux 是否已在运行
+# --- 确保 cmux 运行 ---
 CMUX_RUNNING=$(osascript -e 'application "cmux" is running')
 
-# 保存剪贴板
-OLD_CLIPBOARD=$(pbpaste 2>/dev/null)
-echo -n "$CMD" | pbcopy
-
-if [ "$CMUX_RUNNING" = "true" ]; then
-    # 已运行，新建工作区，粘贴命令并回车
-    osascript <<EOF
-tell application "cmux" to activate
-delay 0.3
-tell application "System Events"
-    tell process "cmux"
-        keystroke "n" using command down
-        delay 1
-        keystroke "v" using command down
-        delay 0.3
-        key code 36
-    end tell
-end tell
-EOF
-else
-    # 未运行，启动 cmux 并等待窗口就绪，使用默认工作区
+if [ "$CMUX_RUNNING" != "true" ]; then
     open -a cmux
-
-    # 所有等待 + 激活 + 粘贴回车在单次 osascript 内完成，
-    # 避免每次轮询都 fork 一个新的 osascript 进程（单次 ~100ms）
-    osascript <<'EOF'
--- 1) 等 cmux 窗口出现（最多 15s，100ms 粒度）
-repeat 150 times
-    try
-        tell application "cmux"
-            if (count of windows) > 0 then exit repeat
-        end tell
-    end try
-    delay 0.1
-end repeat
-
--- 2) 激活并轮询直到 cmux 成为最前台（最多 3s）
-tell application "cmux" to activate
-repeat 30 times
-    try
-        tell application "System Events"
-            if name of first application process whose frontmost is true is "cmux" then exit repeat
-        end tell
-    end try
-    delay 0.1
-end repeat
-
--- 3) 等待主窗口标题非空（渲染进程已挂载 UI，最多 5s）
-repeat 50 times
-    try
-        tell application "System Events"
-            tell process "cmux"
-                if (name of window 1) is not "" then exit repeat
-            end tell
-        end tell
-    end try
-    delay 0.1
-end repeat
-
--- 4) 一点点缓冲，然后粘贴并回车
-delay 0.1
-tell application "System Events"
-    tell process "cmux"
-        keystroke "v" using command down
-        delay 0.3
-        key code 36
-    end tell
-end tell
-EOF
+    # 等 cmux socket 就绪（最多 15s）
+    for i in $(seq 1 30); do
+        "$CMUX_CLI" ping >/dev/null 2>&1 && break
+        sleep 0.5
+    done
+    "$CMUX_CLI" ping >/dev/null 2>&1 || alert "cmux 启动超时，请手动打开 cmux 后重试"
 fi
 
-# 恢复剪贴板
-sleep 1
-echo -n "$OLD_CLIPBOARD" | pbcopy
+# --- 通过 cmux CLI 创建 workspace 并启动 claude ---
+WORKSPACE_NAME="Claude Code: $(basename "$TARGET_DIR")"
+NEW_WS=$("$CMUX_CLI" new-workspace --name "$WORKSPACE_NAME" --cwd "$TARGET_DIR" --command "'${CLAUDE_PATH}' --dangerously-skip-permissions")
+NEW_WS="${NEW_WS#OK }"
+
+# --- 切换到新 workspace 并聚焦窗口 ---
+"$CMUX_CLI" select-workspace --workspace "$NEW_WS"
+osascript -e 'tell application "cmux" to activate'
