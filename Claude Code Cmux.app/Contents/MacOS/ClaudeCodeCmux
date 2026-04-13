@@ -44,6 +44,17 @@ fi
 CMUX_CLI="/Applications/cmux.app/Contents/Resources/bin/cmux"
 [ ! -x "$CMUX_CLI" ] && alert "找不到 cmux CLI\n\n请先安装: https://cmux.com"
 
+# --- 确保 cmux socket 控制模式为 allowAll ---
+CURRENT_MODE=$(defaults read com.cmuxterm.app socketControlMode 2>/dev/null)
+if [ "$CURRENT_MODE" != "allowAll" ]; then
+    defaults write com.cmuxterm.app socketControlMode -string allowAll
+    # 如果 cmux 正在运行，需要重启才能生效
+    if osascript -e 'application "cmux" is running' | grep -q true; then
+        osascript -e 'tell application "cmux" to quit'
+        sleep 1
+    fi
+fi
+
 # --- 确保 cmux 运行 ---
 CMUX_RUNNING=$(osascript -e 'application "cmux" is running')
 
