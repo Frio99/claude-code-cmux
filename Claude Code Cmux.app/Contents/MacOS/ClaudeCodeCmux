@@ -55,24 +55,28 @@ if [ "$CURRENT_MODE" != "allowAll" ]; then
     fi
 fi
 
-# --- 确保 cmux 运行 ---
-CMUX_RUNNING=$(osascript -e 'application "cmux" is running')
+# --- 确保 cmux 运行并激活 ---
+CMUX_WAS_RUNNING=$(osascript -e 'application "cmux" is running')
+open -a cmux
 
-if [ "$CMUX_RUNNING" != "true" ]; then
-    open -a cmux
-    # 等 cmux socket 就绪（最多 15s）
-    for i in $(seq 1 30); do
-        "$CMUX_CLI" ping >/dev/null 2>&1 && break
-        sleep 0.5
-    done
-    "$CMUX_CLI" ping >/dev/null 2>&1 || alert "cmux 启动超时，请手动打开 cmux 后重试"
+# 等 cmux socket 就绪（最多 15s）
+for i in $(seq 1 30); do
+    "$CMUX_CLI" ping >/dev/null 2>&1 && break
+    sleep 0.5
+done
+"$CMUX_CLI" ping >/dev/null 2>&1 || alert "cmux 启动超时，请手动打开 cmux 后重试"
+
+# --- 创建 workspace 并启动 claude ---
+WORKSPACE_NAME="Claude Code: $(basename "$TARGET_DIR")"
+
+if [ "$CMUX_WAS_RUNNING" != "true" ]; then
+    DEFAULT_WS=$("$CMUX_CLI" list-workspaces 2>/dev/null | head -1 | awk '{for(i=1;i<=NF;i++) if($i ~ /^workspace:/) {print $i; exit}}')
 fi
 
-# --- 通过 cmux CLI 创建 workspace 并启动 claude ---
-WORKSPACE_NAME="Claude Code: $(basename "$TARGET_DIR")"
 NEW_WS=$("$CMUX_CLI" new-workspace --name "$WORKSPACE_NAME" --cwd "$TARGET_DIR" --command "'${CLAUDE_PATH}' --dangerously-skip-permissions")
 NEW_WS="${NEW_WS#OK }"
-
-# --- 切换到新 workspace 并聚焦窗口 ---
 "$CMUX_CLI" select-workspace --workspace "$NEW_WS"
-osascript -e 'tell application "cmux" to activate'
+
+if [ -n "$DEFAULT_WS" ]; then
+    "$CMUX_CLI" close-workspace --workspace "$DEFAULT_WS" 2>/dev/null
+fi
