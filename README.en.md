@@ -32,7 +32,7 @@ That's it. One click, and Claude Code is ready to go in your project folder.
 
 ## Download
 
-**[Download v1.0.0 for macOS](https://github.com/Frio99/claude-code-cmux/releases/download/v1.0.0/Claude.Code.Cmux.v1.0.0.macOS.zip)**
+**[Download v1.0.1 for macOS](https://github.com/Frio99/claude-code-cmux/releases/download/v1.0.1/Claude.Code.Cmux.v1.0.1.macOS.zip)**
 
 ## Install (3 steps)
 
@@ -47,7 +47,7 @@ git clone https://github.com/Frio99/claude-code-cmux.git
 cp -R "claude-code-cmux/Claude Code Cmux.app" /Applications/
 ```
 
-> On first launch, macOS will ask for Accessibility permission. Go to **System Settings → Privacy & Security → Accessibility** and allow it.
+> No system permissions required — works out of the box.
 
 ## Usage
 
@@ -65,10 +65,10 @@ cp -R "claude-code-cmux/Claude Code Cmux.app" /Applications/
 
 A lightweight shell script wrapped as a macOS `.app`:
 
-1. Gets the current Finder directory via AppleScript
-2. Locates the `claude` binary in your PATH
-3. Activates cmux and creates a new workspace (`Cmd+N`)
-4. Runs `cd <dir> && claude --dangerously-skip-permissions`
+1. Receives the current folder from the Finder toolbar click
+2. Locates the `claude` binary (`~/.local/bin/claude` and common paths)
+3. Calls the cmux CLI to create a new workspace with the target folder as cwd
+4. The workspace auto-runs `claude --dangerously-skip-permissions` on startup
 
 ## Acknowledgements
 

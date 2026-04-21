@@ -32,7 +32,7 @@
 
 ## 下载
 
-**[下载 v1.0.0 macOS 版](https://github.com/Frio99/claude-code-cmux/releases/download/v1.0.0/Claude.Code.Cmux.v1.0.0.macOS.zip)**
+**[下载 v1.0.1 macOS 版](https://github.com/Frio99/claude-code-cmux/releases/download/v1.0.1/Claude.Code.Cmux.v1.0.1.macOS.zip)**
 
 ## 安装（3 步搞定）
 
@@ -47,7 +47,7 @@ git clone https://github.com/Frio99/claude-code-cmux.git
 cp -R "claude-code-cmux/Claude Code Cmux.app" /Applications/
 ```
 
-> 首次使用时，macOS 会弹出辅助功能权限请求。前往 **系统设置 → 隐私与安全性 → 辅助功能**，允许即可。
+> 无需任何系统权限授权，装完即用。
 
 ## 使用方法
 
@@ -65,10 +65,10 @@ cp -R "claude-code-cmux/Claude Code Cmux.app" /Applications/
 
 一个轻量的 Shell 脚本，包装成 macOS `.app`：
 
-1. 通过 AppleScript 获取 Finder 当前目录
-2. 在 PATH 中定位 `claude` 可执行文件
-3. 激活 cmux 并新建工作区（`Cmd+N`）
-4. 执行 `cd <目录> && claude --dangerously-skip-permissions`
+1. 从 Finder 工具栏点击时，自动获取当前目录
+2. 定位 `claude` 可执行文件（`~/.local/bin/claude` 及常见路径）
+3. 调用 cmux 内置 CLI 创建新工作区并以目标目录为 cwd
+4. 工作区启动时直接执行 `claude --dangerously-skip-permissions`
 
 ## 致谢
 
