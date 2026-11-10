@@ -28,14 +28,20 @@ fi
 [ ! -d "$TARGET_DIR" ] && alert "目录不存在: $TARGET_DIR"
 
 # --- 找 claude 路径 ---
-CLAUDE_PATH="$HOME/.local/bin/claude"
-if [ ! -x "$CLAUDE_PATH" ]; then
-    # fallback: 在常见路径中查找
-    for p in /usr/local/bin/claude /opt/homebrew/bin/claude "$HOME/.npm-global/bin/claude"; do
-        [ -x "$p" ] && CLAUDE_PATH="$p" && break
-    done
+# Finder 启动的 App 拿不到终端里的 PATH，所以先查常见位置，再用登录 shell 兜底
+CLAUDE_PATH=""
+for p in "$HOME/.local/bin/claude" /opt/homebrew/bin/claude /usr/local/bin/claude \
+         "$HOME/.npm-global/bin/claude" "$HOME/.claude/local/claude" \
+         "$HOME"/.nvm/versions/node/*/bin/claude "$HOME"/.volta/bin/claude \
+         "$HOME"/Library/pnpm/claude "$HOME"/.bun/bin/claude; do
+    [ -x "$p" ] && CLAUDE_PATH="$p" && break
+done
+if [ -z "$CLAUDE_PATH" ]; then
+    LOGIN_SHELL="${SHELL:-/bin/zsh}"
+    p=$("$LOGIN_SHELL" -lic 'command -v claude' 2>/dev/null | tail -1)
+    [ -n "$p" ] && [ -x "$p" ] && CLAUDE_PATH="$p"
 fi
-[ ! -x "$CLAUDE_PATH" ] && alert "找不到 Claude Code CLI\n\n请先安装: npm install -g @anthropic-ai/claude-code"
+[ -z "$CLAUDE_PATH" ] && alert "找不到 Claude Code CLI\n\n请在终端运行安装:\ncurl -fsSL https://claude.ai/install.sh | bash\n\n装好后在终端输入 claude 确认能启动，再点一次本工具。"
 
 # --- 检查 cmux 是否已安装 ---
 [ ! -d "/Applications/cmux.app" ] && alert "找不到 cmux\n\n请先安装: https://cmux.com"
