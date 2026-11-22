@@ -47,6 +47,30 @@ git clone https://github.com/Frio99/claude-code-cmux.git
 cp -R "claude-code-cmux/Claude Code Cmux.app" /Applications/
 ```
 
+### If macOS blocks the app
+
+The app is not signed with an Apple certificate, so macOS blocks the first launch after a browser download. This is expected, and you only need to allow it once.
+
+**macOS 15 and later**
+
+1. Double-click the app in Applications. When it is blocked, click **Done**. Do not click "Move to Trash"
+2. Open **System Settings → Privacy & Security** and scroll to Security
+3. Click **Open Anyway** next to Claude Code Cmux and enter your password when asked
+
+**Open Anyway** only appears for about an hour after the app is blocked. If it is missing, double-click the app again.
+
+**macOS 14 and earlier**
+
+Right-click the app, choose **Open**, then click **Open** again in the dialog.
+
+**Or use Terminal** (if Open Anyway is missing or macOS says the app is damaged)
+
+```bash
+xattr -dr com.apple.quarantine "/Applications/Claude Code Cmux.app"
+```
+
+This only removes the download quarantine flag from this app. It does not turn off Gatekeeper.
+
 ### First run
 
 1. In cmux, press `⌘,` to open Settings, go to **Automation**, and set **Socket Control Mode** to **Automation mode**. You only do this once. It applies immediately, with no restart.

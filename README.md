@@ -47,6 +47,30 @@ git clone https://github.com/Frio99/claude-code-cmux.git
 cp -R "claude-code-cmux/Claude Code Cmux.app" /Applications/
 ```
 
+### 打开时被 macOS 拦截
+
+App 没有购买 Apple 签名，通过浏览器下载后第一次打开会被拦截，这是正常现象。放行一次即可：
+
+**macOS 15 及以上**
+
+1. 在「应用程序」里双击一次 App，被拦时点 **完成**，不要点「移到废纸篓」
+2. 打开 **系统设置 → 隐私与安全性**，拉到「安全性」
+3. 在 Claude Code Cmux 旁边点 **仍要打开**，按提示输入开机密码
+
+「仍要打开」只在被拦后约 1 小时内出现。没看到的话，再双击一次 App。
+
+**macOS 14 及以下**
+
+右键点击 App，选择 **打开**，在弹窗中再点一次 **打开**。
+
+**也可以用命令放行**（看不到「仍要打开」或提示「已损坏」时）
+
+```bash
+xattr -dr com.apple.quarantine "/Applications/Claude Code Cmux.app"
+```
+
+这条命令只移除这个 App 的下载隔离标记，不会关闭系统的 Gatekeeper。
+
 ### 首次使用
 
 1. 在 cmux 中按 `⌘,` 打开设置，进入 **自动化**，把 **套接字控制模式** 改为 **自动化模式**。只需一次，立即生效，不用重启 cmux。
