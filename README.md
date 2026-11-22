@@ -32,7 +32,7 @@
 
 ## 下载
 
-**[下载 v1.0.2 macOS 版](https://github.com/Frio99/claude-code-cmux/releases/download/v1.0.2/Claude.Code.Cmux.v1.0.2.macOS.zip)**
+**[下载 v1.0.3 macOS 版](https://github.com/Frio99/claude-code-cmux/releases/download/v1.0.3/Claude.Code.Cmux.v1.0.3.macOS.zip)**
 
 ## 安装（3 步搞定）
 
@@ -56,7 +56,7 @@ cp -R "claude-code-cmux/Claude Code Cmux.app" /Applications/
 
 - **Claude 会跳过所有权限确认**：本工具用 `--dangerously-skip-permissions` 启动 Claude Code，它改文件、执行命令都不会再问你。请只在你信任的项目里使用。
 - **自动化模式会放宽 cmux 的访问限制**：你这个 macOS 账号下的其他程序也能控制 cmux 终端。本工具不会替你修改这项设置。
-- **v1.0.2 及更早版本会自动改成「完全开放访问」（`allowAll`）**：该模式允许本机任何用户和程序控制 cmux。用过这些版本的话，建议手动改回「自动化模式」。
+- **v1.0.1 和 v1.0.2 会自动改成「完全开放访问」（`allowAll`）**：该模式允许本机任何用户和程序控制 cmux。用过这两版的话，建议手动改回「自动化模式」。
 
 ## 使用方法
 

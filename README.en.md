@@ -32,7 +32,7 @@ That's it. One click, and Claude Code is ready to go in your project folder.
 
 ## Download
 
-**[Download v1.0.2 for macOS](https://github.com/Frio99/claude-code-cmux/releases/download/v1.0.2/Claude.Code.Cmux.v1.0.2.macOS.zip)**
+**[Download v1.0.3 for macOS](https://github.com/Frio99/claude-code-cmux/releases/download/v1.0.3/Claude.Code.Cmux.v1.0.3.macOS.zip)**
 
 ## Install (3 steps)
 
@@ -56,7 +56,7 @@ cp -R "claude-code-cmux/Claude Code Cmux.app" /Applications/
 
 - **Claude skips all permission prompts.** The app starts Claude Code with `--dangerously-skip-permissions`, so it edits files and runs commands without asking. Only use it in projects you trust.
 - **Automation mode loosens cmux access control.** Other programs running under your macOS account can control cmux terminals. The app never changes this setting for you.
-- **v1.0.2 and earlier switched cmux to `allowAll` automatically.** That mode lets any local user or process control cmux. If you used those versions, switch back to Automation mode manually.
+- **v1.0.1 and v1.0.2 switched cmux to `allowAll` automatically.** That mode lets any local user or process control cmux. If you used those versions, switch back to Automation mode manually.
 
 ## Usage
 
