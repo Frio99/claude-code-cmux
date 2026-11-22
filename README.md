@@ -47,7 +47,16 @@ git clone https://github.com/Frio99/claude-code-cmux.git
 cp -R "claude-code-cmux/Claude Code Cmux.app" /Applications/
 ```
 
-> 无需任何系统权限授权，装完即用。
+### 首次使用
+
+1. 在 cmux 中按 `⌘,` 打开设置，进入 **自动化**，把 **套接字控制模式** 改为 **自动化模式**。只需一次，立即生效，不用重启 cmux。
+2. 第一次点击本工具时，macOS 会询问是否允许它控制「访达」，请选择允许。它需要用这个权限读取当前文件夹。
+
+### 安全说明
+
+- **Claude 会跳过所有权限确认**：本工具用 `--dangerously-skip-permissions` 启动 Claude Code，它改文件、执行命令都不会再问你。请只在你信任的项目里使用。
+- **自动化模式会放宽 cmux 的访问限制**：你这个 macOS 账号下的其他程序也能控制 cmux 终端。本工具不会替你修改这项设置。
+- **v1.0.2 及更早版本会自动改成「完全开放访问」（`allowAll`）**：该模式允许本机任何用户和程序控制 cmux。用过这些版本的话，建议手动改回「自动化模式」。
 
 ## 使用方法
 

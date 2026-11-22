@@ -50,15 +50,25 @@ fi
 CMUX_CLI="/Applications/cmux.app/Contents/Resources/bin/cmux"
 [ ! -x "$CMUX_CLI" ] && alert "找不到 cmux CLI\n\n请先安装: https://cmux.com"
 
-# --- 确保 cmux socket 控制模式为 allowAll ---
-CURRENT_MODE=$(defaults read com.cmuxterm.app socketControlMode 2>/dev/null)
-if [ "$CURRENT_MODE" != "allowAll" ]; then
-    defaults write com.cmuxterm.app socketControlMode -string allowAll
-    # 如果 cmux 正在运行，需要重启才能生效
-    if osascript -e 'application "cmux" is running' | grep -q true; then
-        osascript -e 'tell application "cmux" to quit'
-        sleep 1
-    fi
+# --- 检查 cmux 是否允许本工具连接 ---
+# 只引导，不替用户改安全设置，也不退出 cmux（会中断正在运行的任务）。
+# 「自动化模式」就够用，而且在 cmux 设置里改完立即生效。
+if ! "$CMUX_CLI" ping >/dev/null 2>&1; then
+    CURRENT_MODE=$(defaults read com.cmuxterm.app socketControlMode 2>/dev/null | tr '[:upper:]' '[:lower:]' | tr -d '_-')
+    case "$CURRENT_MODE" in
+        ""|cmuxonly|off)
+            CHOICE=$(osascript -e 'button returned of (display alert "需要先在 cmux 里开启自动化模式" message "只需设置一次：
+
+1. 在 cmux 中按 ⌘, 打开设置
+2. 进入「自动化」(Automation)
+3. 把「套接字控制模式」(Socket Control Mode) 改为「自动化模式」(Automation mode)
+4. 回到访达，再点一次本工具
+
+此模式允许你这个 macOS 账号下的其他程序控制 cmux。无需重启，不影响正在运行的任务。" buttons {"以后再说", "打开 cmux"} default button "打开 cmux")')
+            [ "$CHOICE" = "打开 cmux" ] && open -a cmux
+            exit 0
+            ;;
+    esac
 fi
 
 # --- 确保 cmux 运行并激活 ---
@@ -70,7 +80,7 @@ for i in $(seq 1 30); do
     "$CMUX_CLI" ping >/dev/null 2>&1 && break
     sleep 0.5
 done
-"$CMUX_CLI" ping >/dev/null 2>&1 || alert "cmux 启动超时，请手动打开 cmux 后重试"
+"$CMUX_CLI" ping >/dev/null 2>&1 || alert "连不上 cmux\n\n请确认 cmux 已打开，且「设置 → 自动化 → 套接字控制模式」为「自动化模式」，然后重试。"
 
 # --- 创建 workspace 并启动 claude ---
 WORKSPACE_NAME="Claude Code: $(basename "$TARGET_DIR")"

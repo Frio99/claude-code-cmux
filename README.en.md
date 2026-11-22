@@ -47,7 +47,16 @@ git clone https://github.com/Frio99/claude-code-cmux.git
 cp -R "claude-code-cmux/Claude Code Cmux.app" /Applications/
 ```
 
-> No system permissions required — works out of the box.
+### First run
+
+1. In cmux, press `⌘,` to open Settings, go to **Automation**, and set **Socket Control Mode** to **Automation mode**. You only do this once. It applies immediately, with no restart.
+2. On the first click, macOS asks whether the app may control Finder. Allow it so the app can read the current folder.
+
+### Security notes
+
+- **Claude skips all permission prompts.** The app starts Claude Code with `--dangerously-skip-permissions`, so it edits files and runs commands without asking. Only use it in projects you trust.
+- **Automation mode loosens cmux access control.** Other programs running under your macOS account can control cmux terminals. The app never changes this setting for you.
+- **v1.0.2 and earlier switched cmux to `allowAll` automatically.** That mode lets any local user or process control cmux. If you used those versions, switch back to Automation mode manually.
 
 ## Usage
 
